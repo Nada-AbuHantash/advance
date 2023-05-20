@@ -47,7 +47,7 @@ pool.connect((err) => {
     console.log('Connected to MySQL database');
   });
   
-//////////
+//////////marah
 app.post('/www.linkedin.com/register', async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
