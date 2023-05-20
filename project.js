@@ -11,6 +11,22 @@ const bcrypt = require('bcrypt');
 app.use(express.json());
 app.use(bodyparser.urlencoded({ extended: true }));
 
+const users = require('./models/user')
+const jobs = require('./models/job')
+const cvs = require('./models/cv')
+
+const app = express()
+const PORT = process.env.PORT
+const router = express.Router()
+
+
+app.use(cors())
+app.use(express.json())
+
+app.use(users)
+app.use(jobs)
+app.use(cvs)
+
 const pool = mysql.createConnection({
 
     host: 'localhost',
@@ -31,7 +47,7 @@ pool.connect((err) => {
     console.log('Connected to MySQL database');
   });
   
-//////////
+//////////marah
 app.post('/www.linkedin.com/register', async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -107,3 +123,108 @@ app.post('/www.linkedin.com/register', async (req, res) => {
   app.listen(3000, function () {
     console.log('Express server is listening on port 3000');
 });
+
+
+//add new job
+router.post("/newjob",async (req,res)=>{
+  const job = new jobs (req.body)
+  try {
+      await job.save()
+      res.status(201).send({job})
+
+  } catch (e) {
+      res.status(400).send(e)
+  }
+});
+//delete job
+router.delete("/deletejob/:idjob",async (req,res)=>{
+  const _jobid = req.params.idjob
+  const count = await jobs.destroy({ where: { idjob: _jobid } });
+  res.send(`deleted row(s): ${count}`);
+});
+
+// update one job
+router.put('/updatejob/:idjob', async (req, res) => {
+  const _jobid = req.params.idjob
+
+  const Description = req.body.Description
+
+
+  const [updatedRows] = await jobs.update(
+      {
+          Description: Description,
+      },
+      {
+          where: { idjob: _jobid },
+      }
+  );
+
+  if (updatedRows) {
+      res.send(`Updated rows: ${updatedRows}`);
+  } else {
+      res.send("job not found");
+  }
+})
+/////////
+//change password
+router.put('/changePassword/:id', async (req, res) => {
+  const userid = req.params.id
+  const newpass = req.body.new
+  const oldpass = req.body.old
+
+
+  const [updatedRows] = await users.update(
+      {
+          Password: newpass
+      },
+      {
+          where: { id: userid , Password:oldpass },
+      }
+  );
+
+  if (updatedRows) {
+      res.send(`password changed`);
+  } else {
+      res.send("wrong password");
+  }
+})
+//add cv
+router.post("/addcv",async (req,res)=>{
+  const cv = new cvs(req.body)
+  try {
+      await cv.save()
+      res.status(201).send({cv})
+
+  } catch (e) {
+      res.status(400).send(e)
+  }
+});
+//delete job
+router.delete("/deletecv/:id",async (req,res)=>{
+  const _id = req.params.id
+  const count = await cvs.destroy({ where: { id: _jd } });
+  res.send(`deleted row(s): ${count}`);
+});
+
+// update onecv
+router.put('/updatecv/:id', async (req, res) => {
+  const _id = req.params.id
+
+  const Description = req.body.Description
+
+
+  const [updatedRows] = await cvs.update(
+      {
+          Description: Description,
+      },
+      {
+          where: { id: _id },
+      }
+  );
+
+  if (updatedRows) {
+      res.send(`Updated rows: ${updatedRows}`);
+  } else {
+      res.send("job not found");
+  }
+})
