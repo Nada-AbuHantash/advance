@@ -92,32 +92,7 @@ app.post('/www.linkedin.com/register', async (req, res) => {
   app.listen(3000, function () {
     console.log('Express server is listening on port 3000');
 });
-///////////////////
 
-//sign up
-router.post("/sign/user",async (req,res)=>{
-  const user = new users(req.body)
-  try {
-      await user.save()
-      res.status(201).send({user})
-
-  } catch (e) {
-      res.status(400).send(e)
-  }
-});
-//login
-router.post("/login/user",async (req,res)=>{
-  var _userName = req.body.name;
-  var _password = req.body.password;
-  try {
-     const l1 = await users.findByPk(_userName);
-     if(l1.password==_password)
-      res.send("logged in successfully");
-     else res.send("wrong username or password");
-  } catch (e) {
-      res.status(400).send(e)
-  }
-});
 
 //add new job
 router.post("/newjob",async (req,res)=>{
@@ -200,7 +175,7 @@ router.delete("/deletecv/:id",async (req,res)=>{
   res.send(`deleted row(s): ${count}`);
 });
 
-// update one job
+// update onecv
 router.put('/updatecv/:id', async (req, res) => {
   const _id = req.params.id
 
