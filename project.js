@@ -71,7 +71,38 @@ app.post('/www.linkedin.com/register', async (req, res) => {
       }
     });
  
-
+    app.post('/www.linkedin.com/login', async (req, res) => {
+      const { email, password } = req.body;
+    
+     
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+      }
+    
+      try {
+        pool.query('SELECT * FROM login WHERE email = ?', email, async (err, results) => {
+          if (err) {
+            console.error('Error in database:', err);
+            return res.status(500).json({ error: 'An error occurred while retrieving user data' });
+          }
+    
+          if (results.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+          }
+          const pass = results[0].password;
+          const isPasswordMatch = await bcrypt.compare(password, pass);
+          if (!isPasswordMatch) {
+            return res.status(401).json({ error: 'Invalid password' });
+          }
+          //console.log.(results);
+          return res.status(200).send(results);
+        });
+      } catch (error) {
+        console.error('Error in database:', error);
+        return res.status(500).json({ error: 'An error occurred while retrieving user data' });
+      }
+    });
+    
 //////////
   app.listen(3000, function () {
     console.log('Express server is listening on port 3000');
