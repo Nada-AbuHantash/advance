@@ -197,8 +197,158 @@ app.post('/www.linkedin.com/register', async (req, res) => {
                });
                               
     });
-    
+    //////////////////////////////////////////////search job - marah
+    app.get('/www.linkedin.com/searchjobs', async (req, res) => {
+      const searchTitle = req.query.title;
+  const searchSalary = req.query.salary;
+  const searchLocation = req.query.location;
 
+  if (!searchTitle && !searchSalary && !searchLocation) {
+    return res.status(400).json({ error: 'Title, salary, or location is required for job search!' });
+  }
+
+  let query = 'SELECT * FROM jobs WHERE ';
+  const values = [];
+
+  if (searchTitle) {
+    query += 'title LIKE ? ';/////////title=qa
+    values.push(`%${searchTitle}%`);
+  }
+
+  if (searchSalary) {
+    if (searchTitle) {
+      query += 'AND ';
+    }
+    query += 'salary = ? ';///////////salary=1200
+    values.push(searchSalary);
+  }
+
+  if (searchLocation) {
+    if (searchTitle || searchSalary) {
+      query += 'AND ';
+    }
+    query += 'location LIKE ? ';//////////////location=nablus
+    values.push(`%${searchLocation}%`);
+  }
+    
+  pool.query(query, values, function (err, results) {
+    if (err) {
+      console.error('Error searching for jobs:', err);
+      return res.status(500).json({ error: 'An error occurred while searching for jobs' });
+    }
+
+    console.log('Search results:', results);
+    return res.status(200).json(results);
+  });
+    });
+    ////////////////////////////////////////see ALL JOBS--marah
+    app.get('/www.linkedin.com/jobs', async (req, res) => {
+      let query = 'SELECT * FROM jobs';
+    
+      pool.query(query, function (err, results) {
+        if (err) {
+          console.error('Error retrieving jobs:', err);
+          return res.status(500).json({ error: 'An error occurred while retrieving jobs' });
+        }
+    
+        console.log('Jobs retrieved successfully');
+        return res.status(200).json(results);
+      });
+    });
+    ////////////////////////////////////delete job after see all id - delete by id ---marah
+    app.delete('/www.linkedin.com/deletejob/:id', async (req, res) => {
+      const jobId = req.params.id;
+    
+      if (!jobId) {
+        return res.status(400).json({ error: 'Job ID is required for deletion!' });
+      }
+    
+      let query = 'DELETE FROM jobs WHERE idjob = ?';
+    
+      pool.query(query, [jobId], function (err, result) {
+        if (err) {
+          console.error('Error deleting job:', err);
+          return res.status(500).json({ error: 'An error occurred while deleting the job' });
+        }
+    
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ error: 'Job not found' });
+        }
+    
+        console.log('Job deleted successfully');
+        return res.status(200).json({ message: 'Job deleted successfully' });
+      });
+    });
+    ////////////////////////////////////update job --marah
+    app.put('/www.linkedin.com/updatejob/:id', async (req, res) => {
+      const jobId = req.params.id;
+      const { title, description, requirements, salary, location, companyname, emailcompany } = req.body;
+    
+      if (!jobId) {
+        return res.status(400).json({ error: 'Job ID is required for updating!' });
+      }
+    
+      let query = 'UPDATE jobs SET title = ?, description = ?, requirements = ?, salary = ?, location = ?, companyname = ?, emailcompany = ? WHERE idjob = ?';
+    
+      pool.query(query, [title, description, requirements, salary, location, companyname, emailcompany, jobId], function (err, result) {
+        if (err) {
+          console.error('Error updating job:', err);
+          return res.status(500).json({ error: 'An error occurred while updating the job' });
+        }
+    
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ error: 'Job not found' });
+        }
+    
+        console.log('Job updated successfully');
+        return res.status(200).json({ message: 'Job updated successfully' });
+      });
+    });
+    
+/////=====add cv (rahaf)==============
+  app.post('/www.linkedin.com/addCv', async (req, res) => {
+    const { idjob, idcustmer, cv,coverletter} = req.body;
+    if (!idjob || !idcustmer || !cv ||!coverletter )
+     {
+      return res.status(200).json({ error: 'erorr to add cv??!' });
+                              }
+     let query="INSERT INTO submission (idjob, idcustmer,  cv,coverletter)VALUES (?, ?,?,?) ";
+       pool.query(query, [idjob, idcustmer,  cv,coverletter ], function(err) {
+                                    if (err) {
+        console.error('Error add cv in database:', err);
+             return res.status(500).json({ error: 'An error occurred while add cv' });
+                                             }
+                              console.log( "ADD CV successfully");
+                              return res.status(201).json({ message: 'ADD successfully' });
+               });
+                              
+    });
+    ////////////////////////////////////
+    ///=== see the cv ///search by job id 
+    app.get('/www.linkedin.com/searchcv/:id', async (req, res) => {
+      const jobId = req.params.id;
+    
+      if (!jobId) {
+        return res.status(400).json({ error: 'Job ID is required for search!' });
+      }
+    
+      let query = 'SELECT * FROM submission WHERE idjob = ?';
+    
+      pool.query(query, [jobId], function (err, result) {
+        if (err) {
+          console.error('Error searching cv:', err);
+          return res.status(500).json({ error: 'An error occurred while searching the job' });
+        }
+    
+        if (result.length === 0) {
+          return res.status(404).json({ error: 'Job not found' });
+        }
+    
+        console.log('Jobs found:', result);
+        return res.status(200).json({ jobs: result });
+      });
+    });
+    
 /////////////////////////////////////////////////////
   app.listen(3000, function () {
     console.log('Express server is listening on port 3000');
