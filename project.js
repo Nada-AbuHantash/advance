@@ -197,8 +197,41 @@ app.post('/www.linkedin.com/register', async (req, res) => {
                });
                               
     });
+    //////////////////////////////////////////////search job 
+    app.get('/www.linkedin.com/searchjobs', async (req, res) => {
+      const searchTitle = req.query.title; // Get the title to search from the query parameter
+      const searchSalary = req.query.salary;
+      if (!searchTitle && !searchSalary) {
+        return res.status(400).json({ error: 'Title or salary is required for job search!' });
+      }
     
-
+      let query = 'SELECT * FROM jobs WHERE ';
+      const values = [];
+    
+      if (searchTitle) {
+        query += 'title LIKE ? ';/////////title=qa
+        values.push(`%${searchTitle}%`);
+      }
+    
+      if (searchSalary) {
+        if (searchTitle) {
+          query += 'OR ';
+        }
+        query += 'salary = ? '; /////salary=1200
+        values.push(searchSalary);
+      }
+    
+      pool.query(query, values, function (err, results) {
+        if (err) {
+          console.error('Error searching for jobs:', err);
+          return res.status(500).json({ error: 'An error occurred while searching for jobs' });
+        }
+    
+        console.log('Search results:', results);
+        return res.status(200).json(results);
+      });
+    });
+    
 /////////////////////////////////////////////////////
   app.listen(3000, function () {
     console.log('Express server is listening on port 3000');
