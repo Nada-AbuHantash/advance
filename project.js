@@ -197,7 +197,70 @@ app.post('/www.linkedin.com/register', async (req, res) => {
                });
                               
     });
+    /////=====add cv (rahaf)==============
+  app.post('/www.linkedin.com/addCv', async (req, res) => {
+    const { idjob, idcustmer, cv,coverletterm} = req.body;
+    if (!idjob || !idcustmer || !cv ||!coverletterm )
+     {
+      return res.status(200).json({ error: 'erorr to add cv??!' });
+                              }
+     let query="INSERT INTO submission (idjob, idcustmer,  cv,coverletterm)VALUES (?, ?,?,?) ";
+       pool.query(query, [idjob, idcustmer,  cv,coverletterm], function(err) {
+                                    if (err) {
+        console.error('Error add cv in database:', err);
+             return res.status(500).json({ error: 'An error occurred while add cv' });
+                                             }
+                              console.log( "ADD CV successfully");
+                              return res.status(201).json({ message: 'ADD successfully' });
+               });
+                              
+    });
+    ///=== see thw cv and updat it rah
+    app.put('/www.linkedin.com/showcv', async (req, res) => {
+      const {idjob, idcustmer, cv,coverletterm,id } = req.body;
+      const idc = req.session.iidcustmer;
+      if (!idcustmer ) {
+        return res.status(400).json({ error: 'id are required' });
+      }
+      try{
+        pool.query('SELECT * FROM submission WHERE id = ?', idc, async (err, results) => {
+          if (err) {
+           console.error('Error in database:', err);
+           return res.status(500).json({ error: 'An error occurred while retrieving cv ' });
+                   }
+                   if (results.length === 0) {
+                    return res.status(404).json({ error: 'error not found ' });
+                                             }
+                                             const id=results[0].id;
+                                             const saltRounds = 10;
+                                             const salt = await bcrypt.genSalt(saltRounds);
+                                             let query='UPDATE submission SET cv=? , coverletterm=?  WHERE id=? ';
+                                             pool.query(query, [cv,coverletterm,id], function(err) {
+                                                   if (err) {
+                                                       console.error('Error storing user in database:', err);
+                                                       return res.status(500).json({ error: 'An error occurred while Update cv' });
+                                                            }
+                                                            req.session.iidcustmer =idcustmer ;
+                                                             req.session.id=id;
+                                             console.log( "Update cv successfully");
+                                             return res.status(201).json({ message: 'Update cv successfully' });
+                              });                       
+
+
+});
+
+
+      }catch (error) {
+        console.error('Error in database:', error);
+        return res.status(500).json({ error: 'An error occurred while retrieving user data' });
+      } 
     
+                  
+        
+              });
+
+
+ 
 
 /////////////////////////////////////////////////////
   app.listen(3000, function () {
