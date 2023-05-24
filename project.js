@@ -319,7 +319,7 @@ app.post('/www.linkedin.com/register', async (req, res) => {
              return res.status(500).json({ error: 'An error occurred while add cv' });
                                              }
                               console.log( "ADD CV successfully");
-                              return res.status(201).json({ message: 'ADD successfully' });
+                              return res.status(200).json({ message: 'ADD successfully' });
                });
                               
     });
