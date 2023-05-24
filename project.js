@@ -192,8 +192,8 @@ app.post('/www.linkedin.com/register', async (req, res) => {
                                         console.error('Error storing user in database:', err);
                                         return res.status(500).json({ error: 'An error occurred while creating the user' });
                                              }
-                              console.log( "User created successfully");
-                              return res.status(201).json({ message: 'User created successfully' });
+                              console.log( "add job successfully");
+                              return res.status(201).json({ message: 'add job successfully' });
                });
                               
     });
